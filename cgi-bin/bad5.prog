@@ -1,0 +1,8 @@
+#! ./interpreter/interpreter
+
+program
+{
+	int a = -20;
+	string a = "string";
+	write("Hello! You have entered the following arguments: ", $QUERY_STRING, " from address ", $REMOTE_ADDR);
+}

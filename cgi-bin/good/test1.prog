@@ -1,0 +1,21 @@
+#! ./interpreter/interpreter
+
+program
+{
+	write("Arguments: ", "\n");
+	write("CONTENT-TYPE: ", $CONTENT-TYPE, "\n");
+	write("GATEWAY-INTERFACE: ", $GATEWAY-INTERFACE, "\n");
+	write("REMOTE_ADDR: ", $REMOTE_ADDR, "\n");
+	write("REMOTE_PORT: ", $REMOTE_PORT, "\n");
+	write("QUERY_STRING: ", $QUERY_STRING, "\n");
+	write("SERVER_ADDR: ", $SERVER_ADDR, "\n");
+	write("SERVER_NAME: ", $SERVER_NAME, "\n");
+	write("SERVER_PORT: ", $SERVER_PORT, "\n");
+	write("SERVER_PROTOCOL: ", $SERVER_PROTOCOL, "\n");
+	write("SERVER_SOFTWARE: ", $SERVER_SOFTWARE, "\n");
+	write("SCRIPT_NAME: ", $SCRIPT_NAME, "\n");
+	write("SCRIPT_FILENAME: ", $SCRIPT_FILENAME, "\n");
+	write("DOCUMENT_ROOT: ", $DOCUMENT_ROOT, "\n");
+	write("HTTP_USER_AGENT: ", $HTTP_USER_AGENT, "\n");
+	write("HTTP_REFERER: ", $HTTP_REFERER, "\n");
+}

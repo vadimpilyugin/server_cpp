@@ -1,0 +1,9 @@
+#! ./interpreter/interpreter
+
+program
+{
+	int a;
+	string b;
+	write(a+b);
+	write("Hello! You have entered the following arguments: ", $QUERY_STRING, " from address ", $REMOTE_ADDR);
+}
