@@ -1,0 +1,19 @@
+#! ./interpreter/interpreter
+
+program
+{
+	bool f = false; 
+	bool t = true;
+	if(f and t)
+		write("Error!\n");
+	else
+		write("Good\n");
+	if(f or t)
+		write("Good\n");
+	else
+		write("Bad\n");
+	if(not f and t)
+		write("Good\n");
+	else
+		write("Very bad\n");
+}
