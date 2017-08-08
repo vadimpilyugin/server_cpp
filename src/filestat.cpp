@@ -1,19 +1,140 @@
-#include <string>
 #include <unistd.h>
+#include <dirent.h>
+#include <algorithm>
 using namespace std;
 
 #include "filestat.h"
+#include "config.h"
 #include "printer.hpp"
 
-string FileStat::getFileType() const
+// vector <string> FileStat::getFileAttrib () const {
+// 	const size_t KB_IN_BYTES = 1024;
+	
+// 	return { _path, hrModifDate (), to_string (getSize () / KB_IN_BYTES), isDirectory () ? "Directory", "File" };
+// }
+
+const char *Directory::THIS_DIR = ".";
+const char *Directory::PARENT_DIR = "..";
+const char *Directory::ROOT = "./";
+
+void Directory::remove_slash (string &path) {
+	if (path != ROOT && path.back () == SLASH)
+		path.pop_back ();
+}
+string Directory::parent_dir (string path) {
+	remove_slash (path);
+	if (path == ROOT) {
+		return ROOT;
+	}
+	size_t last_slash = path.find_last_of (SLASH);
+	return path.substr (0, last_slash+1);
+}
+string Directory::short_name (string full_path) {
+	if (full_path == ROOT)
+		return ROOT;
+	remove_slash (full_path);
+	size_t last_slash = full_path.find_last_of (SLASH);
+	return full_path.substr (last_slash+1);
+}
+void Directory::add_slash (string &path) {
+	if (path.back () != SLASH && FileStat (path).isDirectory ())
+		path.push_back (SLASH);
+}
+void Directory::remove_first_slash (string &path) {
+	path = string (".") + path;
+}
+vector<FileStat> Directory::ls (string dir_path, bool include_parent) {
+	vector<FileStat> result;
+	if (include_parent) {
+		// include parent directory in result
+		Printer::debug ("Listing directory", "", {{"This dir", dir_path}, {"Parent", parent_dir (dir_path)}});
+		result.emplace_back (parent_dir (dir_path));
+	}
+	vector<FileStat> dirs;
+	vector<FileStat> files;
+	// Add a slash after directory name, if needed
+	add_slash (dir_path);
+	for (auto &dir_entry:list_directory (dir_path)) {
+		// do not include . and ..
+		if (dir_entry != THIS_DIR && dir_entry != PARENT_DIR) {
+			FileStat fst (dir_path+dir_entry);
+			if (fst.isDirectory ())
+				dirs.push_back (fst);
+			else
+				files.push_back (fst);
+		}
+		
+	}
+	sort_by_modif_date (dirs);
+	sort_by_modif_date (files);
+	result.insert( result.end(), dirs.begin(), dirs.end() );
+	result.insert( result.end(), files.begin(), files.end() );
+	return result;
+}
+void Directory::sort_by_modif_date (vector <FileStat> &files) {
+	vector <int> indices;
+	vector <time_t> values;
+	vector <FileStat> files_copy (files);
+	int i = 0;
+	for (auto &file: files) {
+		indices.push_back (i++);
+		values.push_back (file.getModifDate ());
+	}
+	std::sort (indices.begin (), indices.end (), [values] (int i, int j) {
+		return !(values[i] < values[j]);
+	});
+	i = 0;
+	for (auto ind: indices) {
+		files[i++] = files_copy[ind];
+	}
+}
+vector <string> Directory::list_directory (string &dir_path) {
+	vector <string> result;
+	DIR *dir;
+	struct dirent *ent;
+	if ((dir = opendir (dir_path.c_str ())) != NULL) {
+		while ((ent = readdir (dir)) != NULL) {
+			if (ent -> d_name[0] != '.')
+				result.emplace_back (ent->d_name);
+		}
+		return result;
+	}
+	else {
+		/* could not open directory */
+	  	Printer::error (dir_path, "Could not open directory");
+	  	throw FileException ("Could not open directory");
+	}
+}
+
+FileStat::FileStat (string path){
+	struct stat file_attrib;
+	if (stat (path.c_str (), &file_attrib) == -1)
+		throw FileException (path);
+	_path = path;
+	// чтобы не выдавать наружу относительный путь
+	if (path == ".")
+		Printer::fatal ("Dot!");
+	if (_path.front () == '.')
+		_path.erase (_path.begin ());
+	_name = Directory::short_name (_path);
+	_fileSize = file_attrib.st_size;
+	_modifDate = file_attrib.st_mtime;
+	_isDirectory = S_ISDIR (file_attrib.st_mode);
+	_isReadable = file_attrib.st_mode & (S_IRGRP | S_IRUSR | S_IROTH);
+	_mimeType = mimeType (_name);
+}
+
+string FileStat::mimeType (string &path)
 {
-	const char *binary = "octet/stream";
-	if(_path.find("cgi-bin") != string::npos)
+	static const char *BINARY = "octet/stream";
+	// if it is the output of the script
+	if (path.find (Config::section ("internal")["script_folder"]) != string::npos)
 		return "text/plain";
-	size_t dot = _path.find_last_of('.');
+	// if the file has no extension
+	size_t dot = path.find_last_of('.');
 	if (dot == string::npos)
-		return binary;
-	Hash streams = {
+		return BINARY;
+	static Hash MEDIA_TYPES = {
 		{".ez", "application/andrew-inset"},
 		{".aw", "application/applixware"},
 		{".atom", "application/atom+xml"},
@@ -999,35 +1120,9 @@ string FileStat::getFileType() const
 		{".smv", "video/x-smv"},
 		{".ice", "x-conference/x-cooltalk"}
 	};
-	string file_format = _path.substr(dot, string::npos);
-	if (!streams[file_format].empty ())
-		return streams[file_format];
+	string file_format = path.substr (dot, string::npos);
+	if (!MEDIA_TYPES[file_format].empty ())
+		return MEDIA_TYPES[file_format];
 	else
-		return binary;
-}
-
-string FileStat::getCwd()
-{
-	char *cwd = new char[512];
-	if (getcwd(cwd, 512) == NULL) {
-		Printer::error (strerror (errno), "Cannot get current working directory");
-		return "";
-	}
-	string tmp = string(cwd);
-	delete [] cwd;
-	return tmp;
-}
-string FileStat::getFullPath(string &relative_path)
-{
-	string curr_dir = getCwd();
-	bool slash1 = (curr_dir.back() == '/'), slash2 = (relative_path.front() == '/');
-	if(slash1 || slash2)
-		return curr_dir + relative_path;
-	else if(slash1 && slash2)
-	{
-		curr_dir.pop_back();
-		return curr_dir + relative_path;
-	}
-	// else if(!slash1 && !slash2)
-	return curr_dir + string("/") + relative_path;
+		return BINARY;
 }

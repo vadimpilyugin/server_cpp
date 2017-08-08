@@ -10,6 +10,7 @@
 #include <cstring>
 #include <sstream>
 #include <fcntl.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <wait.h>
@@ -62,6 +63,7 @@ CgiProg::CgiProg(string path, vector<string> &env_vect, vector<string> &argv_vec
 		dup2(fd, 1);
 		execve(argv[0], argv, env);
 		// if execve didn't work
+		Printer::error (strerror (errno), "execve() didn't work");
 		free(argv);
 		free(env);
 		close(1);

@@ -9,7 +9,7 @@ LIB_FILES =
 
 # Compiler options
 CXX = g++
-CXXFLAGS = -O2 -Wall -std=c++11 -Wno-unused-function -I cpp_config/include
+CXXFLAGS = -O2 -Wall -std=c++11 -Wno-unused-function # -I cpp_config/include
 
 # Directories with source code
 SRC_DIR = src
@@ -67,7 +67,7 @@ deps.mk:
 
 # Rules for compiling targets
 $(BIN_DIR)/$(MAIN_TARGET): $(OBJFILES)
-	$(CXX) $(CXXFLAGS) $(filter %.o, $^) cpp_config/build/config.o -o $@ $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) $(filter %.o, $^)  -o $@ $(LDFLAGS)
 
 # Pattern for generating dependency description files (*.d)
 $(DEP_DIR)/%.d: $(SRC_DIR)/%$(FILE_EXT)

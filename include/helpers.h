@@ -1,14 +1,8 @@
 #include "config.h"
+#include "datetime.h"
 
-#include <string>
-#include <sys/time.h>
-
+#include <vector>
 using namespace std;
-
-class DateTime {
-public:
-	static string getGmtDate(time_t time_in_sec = -1);
-};
 
 class HeaderField {
 public:
@@ -39,4 +33,31 @@ public:
 	static string response_body (int errcode);
 	static string response_200 (string method, time_t modif_date, string content_type = "", int content_length = 0);
 	static string response_4xx_5xx (int errcode, string method);
+};
+
+class UrlEncoder {
+public:
+	// Encodes the URL using %xx notation
+    static string url_encode(const string &value, bool encode_slashes = true);
+    // decodes the URL
+    static string url_decode(const string &value);
+private:
+	// returns a character represented by 2 hex digits
+    static char to_c (char c1, char c2);
+};
+
+class HtmlHelpers {
+public:
+	// returns a string with html <a> tag
+	static string link (string src, string descr);
+	// returns a string with filled <head>
+	static string header (string name);
+	// returns a string with html table with bootstrap styles
+	static string table (const vector <string> &thead, const vector <vector <string> > &tbody);
+	// returns an <img> tag
+	static string img (const string &src, string text = "No picture");
+	// returns an html table filled with directory files
+	static string dir_to_table (const string &dir_path);
+	// returns a string containing html document which lists all files in a directory
+	static string htmlDirList (const string &dir_path);
 };
