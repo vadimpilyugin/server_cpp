@@ -33,15 +33,15 @@ bool ClientSocket::isClosed()
 {
 	struct pollfd poll_struct;
 	poll_struct.fd = _sd;
-	poll_struct.events = POLLRDHUP | POLLOUT;
-	switch(poll(&poll_struct, 1, 50))
+	poll_struct.events = POLLHUP | POLLOUT;
+	switch(poll(&poll_struct, 1, 500))
 	{
 		case -1: throw ServerException("Poll не сработал");
 				 break;
 		case 0:	 return false;
 		default:
 		{
-			if(poll_struct.revents & POLLRDHUP)
+			if(poll_struct.revents & POLLHUP)
 				return true;
 			else if(poll_struct.revents & POLLOUT)
 				return false;
@@ -64,6 +64,7 @@ void ClientSocket::sendFile(const string &path)
 	int n;
 	const int BUF_LEN = 1024*1024;
 	char *buf = new char[BUF_LEN];
+	int i = 0;
 	while(!feof(content))
 	{
 		n = fread(buf, sizeof(char), BUF_LEN, content);
@@ -72,7 +73,7 @@ void ClientSocket::sendFile(const string &path)
 			throw ClientException (strerror (errno));
 		}
 		else
-			Printer::debug ("Посылаем " +to_string(n)+" байт");
+			Printer::debug (string("[")+to_string(i++)+"]"+"Посылаем " +to_string(n)+" байт");
 		send(buf, n);
 	}
 	delete [] buf;

@@ -1,7 +1,0 @@
-#! ./interpreter/interpreter
-
-program
-{
-	int write = 5;
-	write("Hello! You have entered the following arguments: ", $QUERY_STRING, " from address ", $REMOTE_ADDR);
-}

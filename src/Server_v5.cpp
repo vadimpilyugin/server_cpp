@@ -20,9 +20,9 @@ int main()
 {
 	try
 	{
-		Config::load ("/home/vadim/Documents/server_cpp/config.cfg");
+		Config::load ("./config.cfg");
+		// chdir ("/");
 		chdir (Config::section("internal")["root_dir"].c_str ());
-		// chroot (Config::section("internal")["root_dir"].c_str ());
 		srand (time (NULL));
 		ServerSocket ls(Config::section("network")["server_ip"], stoi (Config::section("network")["server_port"].c_str ()));
 		Printer::debug ("", Config::section("internal")["server_software"], {
@@ -50,6 +50,10 @@ int main()
 					catch(ClientException &a)
 					{
 						cerr << "Client["<<it->getNo() <<"]: " << a.what() << endl;
+						clients_list.erase(it++);
+					}
+					catch (SocketException &exc) {
+						Printer::error (exc.what (), "SocketException");
 						clients_list.erase(it++);
 					}
 				}
