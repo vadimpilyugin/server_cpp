@@ -41,7 +41,8 @@ void Directory::add_slash (string &path) {
 		path.push_back (SLASH);
 }
 void Directory::remove_first_slash (string &path) {
-	path = string (".") + path;
+	if (path.front () == '/')
+		path = string (".") + path;
 }
 vector<FileStat> Directory::ls (string dir_path, bool include_parent) {
 	vector<FileStat> result;
