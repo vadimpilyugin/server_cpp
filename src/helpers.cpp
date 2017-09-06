@@ -203,6 +203,8 @@ string HtmlHelpers::header (string name) {
     head += string ("<title>")+name+"</title>\n";
   	head += "<link rel=\"stylesheet\" href=\"/internal/css/bootstrap.min.css\">\n";
   	head += "<link rel=\"stylesheet\" href=\"/internal/css/style.css\">\n";
+  	// head += "<link rel=\"stylesheet\" href=\"/internal/css/font-awesome.css\">\n";
+  	// head += "<link rel=\"stylesheet\" href=\"/internal/css/font-awesome.min.css\">\n";
   	head += "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\">";
   	head += "<script type=\"text/javascript\" src=\"/internal/js/jquery.min.js\"></script>\n";
   	head += "<script type=\"text/javascript\" src=\"/internal/js/bootstrap.min.js\"></script>\n";
@@ -260,7 +262,7 @@ string HtmlHelpers::htmlDirList (const string &dir_path) {
 	string html_page = 
 	"<!DOCTYPE html>\n"
 	"<html lang=\"en\">\n";
-	html_page += header (string("Index of ")+dir_path.substr(1));
+	html_page += header (string("Index of ")+dir_path.substr(1, string::npos));
 	// HTML Body
 	html_page += "<body>\n";
 	html_page += "<div class=\"container\">\n";
@@ -268,11 +270,11 @@ string HtmlHelpers::htmlDirList (const string &dir_path) {
 	// html_page += "<div class=\"row\">\n";
 	// html_page += "<div class=\"col-md-1\"></div>\n";
 	html_page += "<div class=\"col-6\">\n";
-	html_page += string("	<h1>")+"Index of "+dir_path+"</h1>\n";
+	html_page += string("	<h1>")+"Index of "+dir_path.substr(1, string::npos)+"</h1>\n";
 	// create Bootstrap table
   	html_page += dir_to_table (dir_path);
 	//Apache Server at cmcstuff.esyr.org Port 80
-	html_page += 	string("	<address>")+Config::section("internal")["server_software"]+" at "+
+	html_page += 	string("	<address style=\"font-style:italic\">")+Config::section("internal")["server_software"]+" at "+
 					Config::section("network")["server_name"]+" Port "+
 					Config::section("network")["server_port"]+"</address>";
 	html_page += "\n";
