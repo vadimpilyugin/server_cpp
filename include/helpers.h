@@ -33,7 +33,7 @@ public:
 				"-"+
 				to_string(last_byte_pos)+
 				"/"+
-				to_string(file_size);
+				to_string(file_size) + DELIM;
 		}
 		else {
 			// это сигнализирует об ошибке
