@@ -24,6 +24,8 @@ FileToSend::FileToSend (string _path, size_t first_byte_pos, size_t last_byte_po
 	portion_size = last_byte - first_byte + 1;
 	current_pos = first_byte;
 	bytes_left = portion_size;
+	// устанавливаем файл на нужную позицию
+	fseek(fp, first_byte, SEEK_SET);
 }
 
 size_t FileToSend::fread (size_t n_bytes, char *buf) {
