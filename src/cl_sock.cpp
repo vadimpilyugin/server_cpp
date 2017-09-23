@@ -20,9 +20,21 @@ void ClientSocket::send(const void *buffer, size_t size)
 		}
 		// если записали меньше, чем хотели
 		else if (n_written < size) {
-			// panic!
 			Printer::error ("послали меньше, чем было в буфере", string("[ClientSocket::send]"));
-			throw ServerException ("послали меньше, чем было в буфере");
+			// пытаемся послать еще раз
+			bool isSent = false;
+			int offset = n_written;
+			while (!isSent) {
+				n_written = write(_sd, buffer+offset, size-offset);
+				if (n_written < size-offset) {
+					// repeat
+					offset += n_written;
+				}
+				else {
+					isSent = true;
+				}
+			}
+			// throw ServerException ("послали меньше, чем было в буфере");
 		}
 	}
 	else {
@@ -75,11 +87,12 @@ void ClientSocket::sendFile(FileToSend *file_to_send)
 		throw ServerException ("Переданный указатель на FileToSend нулевой!");
 	}
 	// указатель не нулевой
-	Printer::debug (
-		string ("посылаем ")+to_string (BUF_LEN)+" байт",
-		string ("sendFile ")+to_string (file_to_send -> current_pos)+"/"+to_string (file_to_send -> last_byte)
-	);
 	size_t n_read = file_to_send -> fread (BUF_LEN, buf);
+	Printer::debug (
+		string ("посылаем ")+to_string (n_read)+" байт",
+		string ("sendFile ")+to_string (file_to_send -> current_pos-n_read)+
+		"-"+to_string ((file_to_send -> current_pos)-1)+"/"+to_string(file_to_send -> file_size)
+	);
 	send (buf, n_read);
 	// FILE *content = fopen(path.c_str(), "r");
 	// if (content == NULL) {
