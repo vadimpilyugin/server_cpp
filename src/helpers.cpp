@@ -21,6 +21,11 @@ string Response::response_code (int errcode) {
 			code = "200 OK";
 			break;
 		}
+		case 206:
+		{
+			code = "206 Partial Content";
+			break;
+		}
 		case 400:
 		{
 			code = "400 Bad Request";
@@ -34,6 +39,11 @@ string Response::response_code (int errcode) {
 		case 404:
 		{
 			code = "404 Not Found";
+			break;
+		}
+		case 416:
+		{
+			code = "416 Range Not Satisfiable";
 			break;
 		}
 		case 500:
@@ -74,6 +84,11 @@ string Response::response_body (int errcode) {
 			info = "The specified location is not found\n";
 			break;
 		}
+		case 416:
+		{
+			info = "Requested range not satisfiable\n";
+			break;
+		}
 		case 500:
 		{
 			info = "Server error. Service unavailable\n";
@@ -99,6 +114,7 @@ string Response::response_200 (string method, time_t modif_date, string content_
 	Date, Server,
 	Content-type-для GET, 
 	Content-length – для GET,
+	Content-Range - "bytes 21010-47021/47022"
 	Last-modified,
 	тело – для GET
 	*/
@@ -107,6 +123,7 @@ string Response::response_200 (string method, time_t modif_date, string content_
 	resp << HeaderField::date_field ();
 	resp << HeaderField::server_field ();
 	if (method == "GET") {
+		resp << HeaderField::range_field ();
 		resp << HeaderField::content_type_field (content_type);
 		resp << HeaderField::content_length_field (content_length);
 	}
@@ -114,7 +131,27 @@ string Response::response_200 (string method, time_t modif_date, string content_
 	resp << HeaderField::DELIM;
 	return resp.str();
 }
-string Response::response_4xx_5xx (int errcode, string method) {
+string Response::response_206 (time_t modif_date, string content_type, int content_length,
+																size_t file_size, size_t first_byte_pos, size_t last_byte_pos) {
+	/*
+	Date, Server,
+	Content-type-для GET, 
+	Content-length – для GET,
+	Last-modified,
+	тело – для GET
+	*/
+	stringstream resp;
+	resp << Config::section("internal")["server_protocol"] << " " << response_code (206) << HeaderField::DELIM;
+	resp << HeaderField::date_field ();
+	resp << HeaderField::server_field ();
+	resp << HeaderField::content_range_field (file_size, first_byte_pos, last_byte_pos);
+	resp << HeaderField::content_type_field (content_type);
+	resp << HeaderField::content_length_field (content_length);
+	resp << HeaderField::last_modified_field (modif_date);
+	resp << HeaderField::DELIM;
+	return resp.str();
+}
+string Response::response_4xx_5xx (int errcode, string method, size_t file_size) {
 	/*
 	Date, Server,
 	Content-type,
@@ -131,6 +168,9 @@ string Response::response_4xx_5xx (int errcode, string method) {
 	resp << HeaderField::server_field ();
 	if (errcode == 501) {
 		resp << HeaderField::allow_field ();
+	}
+	if (errcode == 416) {
+		resp << HeaderField::content_range_field (file_size);
 	}
 	if (method == "GET") {
 		resp << HeaderField::content_type_field (content_type);
@@ -235,6 +275,41 @@ string HtmlHelpers::table (const vector <string> &thead, const vector <vector <s
 string HtmlHelpers::img (const string &src, string text) {
 	return string ("<img src=\"")+src+"\" alt=\""+text+"\">";
 }
+// def pp_size(size)
+// 	if size / $B_IN_GB != 0
+// 		"#{((size+0.0)/$B_IN_GB).round(1)} ГБ"
+// 	elsif size / $B_IN_MB != 0
+// 		if size / $B_IN_MB > 10
+// 			"#{size/$B_IN_MB} МБ"
+// 		else
+// 			"#{((size+0.0)/$B_IN_MB).round(1)} МБ"
+// 		end
+// 	elsif size / $B_IN_KB != 0
+// 		"#{size/$B_IN_KB} КБ"
+// 	else
+// 		"#{size} Б"
+// 	end
+// end
+#define B_IN_GB 1073741824
+#define B_IN_MB 1048576
+#define B_IN_KB 1024
+
+string pp_size(int size) {
+	stringstream pretty_size;
+	if (size / B_IN_GB)
+		pretty_size << std::fixed << std::setprecision(2) << ((size+0.0)/B_IN_GB) << " ГБ";
+	else if (size / B_IN_MB)
+		if (size / B_IN_MB >= 10)
+			pretty_size << size / B_IN_MB << " МБ";
+		else
+			pretty_size << std::fixed << std::setprecision(2) << ((size+0.0)/B_IN_MB) << " МБ";
+	else if (size / B_IN_KB)
+		pretty_size << size / B_IN_KB << " КБ";
+	else
+		pretty_size << size << " Б";
+	return pretty_size.str();
+}
+
 string HtmlHelpers::dir_to_table (const string &dir_path) {
 	vector <FileStat> files = Directory::ls (dir_path);
 	vector <vector <string> > entries;
@@ -249,10 +324,9 @@ string HtmlHelpers::dir_to_table (const string &dir_path) {
 			entries.push_back ({icon, sendto, files[i].hrModifDate (), "-"});
 		}
 		else {
-			const size_t KB_IN_BYTES = 1024;
-			string size_in_kb = to_string (files[i].getSize () / KB_IN_BYTES) + " КБ";
+			string file_size = pp_size (files[i].getSize ());
 			string icon = "<i class=\"fa fa-file-o\" style=\"font-size:24px\"></i>";
-			entries.push_back ({icon, sendto, files[i].hrModifDate (), size_in_kb});
+			entries.push_back ({icon, sendto, files[i].hrModifDate (), file_size});
 		}
 	}
 	return table ({img ("/internal/img/blank.gif"), "Имя", "Изменено", "Размер"}, entries);
