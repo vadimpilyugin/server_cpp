@@ -98,6 +98,7 @@ vector <string> Directory::list_directory (string &dir_path) {
 			if (ent -> d_name[0] != '.')
 				result.emplace_back (ent->d_name);
 		}
+		closedir (dir);
 		return result;
 	}
 	else {

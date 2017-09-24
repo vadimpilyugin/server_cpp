@@ -18,6 +18,7 @@ using namespace std;
 
 int main()
 {
+	list <Client *> clients_list;
 	try
 	{
 		Config::load ("./config.cfg");
@@ -33,7 +34,6 @@ int main()
 			}
 		);
 		Printer::debug ("", "----------------------");
-		list <Client *> clients_list;
 		SelectionSet set;
 		for (;;) {
 			set.select(ls, clients_list, CgiProg::getProcNum());
@@ -41,32 +41,26 @@ int main()
 			while(it != clients_list.end()) {
 				try {
 					(*it) -> checkCgiProgs();
-					if ((*it) -> isSendingFile ()) {
-						Printer::debug ("Клиент ["+to_string((*it)->getNo())+"] принимает файл!");
-					}
-					else {
-						Printer::error ("Клиент ["+to_string((*it)->getNo())+"] не принимает файл!");
-					}
-					if (set.isReadyToWrite ((*it) -> getSock ())) {
-						Printer::debug ("Клиент ["+to_string((*it)->getNo())+"] готов к записи!");
-					}
-					else {
-						Printer::error ("Клиент ["+to_string((*it)->getNo())+"] не готов к записи!");
-					}
 					// если посылаем файл и готов к записи
-					if ((*it) -> isSendingFile () && set.isReadyToWrite ((*it) -> getSock ()))
+					if ((*it) -> isSendingFile () && set.isReadyToWrite ((*it) -> getSock ())) {
+						Printer::debug ("Клиент ["+to_string((*it)->getNo())+"] принимает файл и готов к записи!");
 						(*it) -> respond_or_send ();
+					}
 					// если пришел запрос по сети либо нужен был ответ ранее
-					else if (set.isReadyToRead ((*it) -> getSock ()) || (*it) -> isResponseToClientNeeded ())
+					else if (set.isReadyToRead ((*it) -> getSock ()) || (*it) -> isResponseToClientNeeded ()) {
+						Printer::debug ("Клиент ["+to_string((*it)->getNo())+"] готов к чтению!");
 						(*it) -> respond_or_send ();
+					}
 					++it;
 				}
 				catch(ClientException &a) {
 					cerr << "Client[" << (*it) -> getNo() << "]: " << a.what() << endl;
+					delete (*it);
 					clients_list.erase(it++);
 				}
 				catch (SocketException &exc) {
 					Printer::error (exc.what (), "[main loop]");
+					delete (*it);
 					clients_list.erase (it++);
 				}
 			}
@@ -95,16 +89,25 @@ int main()
 	{
 		cerr << "Address Exception: " << a.what() << "(" << a.strerr() << ")" << endl
 			<< "Port: "<< a.getPort() << endl;
+		for (auto it: clients_list) {
+			delete it;
+		}
 		return 1;
 	}
 	catch(SocketException &a)
 	{
 		cerr << "Socket Exception: " << a.what() << '(' << a.strerr() << ')'<<endl;
+		for (auto it: clients_list) {
+			delete it;
+		}
 		return 1;
 	}
 	catch(ServerException &a)
 	{
 		cerr << "Server Exception: " << a.what() << '(' << a.strerr() << ')'<<endl;
+		for (auto it: clients_list) {
+			delete it;
+		}
 		return 1;
 	}
 }

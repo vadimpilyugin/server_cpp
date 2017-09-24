@@ -58,6 +58,8 @@ Client::~Client()
 	if(_buf != nullptr)
 	{
 		delete [] _buf;
+		if (file_to_send != nullptr)
+			delete file_to_send;
 		Printer::debug ("успешно отключен!", std::string ("Client[") + std::to_string (_clientNo) + "]");
 		_clients_num --;
 	}
