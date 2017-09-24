@@ -341,17 +341,18 @@ string HtmlHelpers::htmlDirList (const string &dir_path) {
 	html_page += "<body>\n";
 	html_page += "<div class=\"container\">\n";
 	// html_page += "<div class=\"section\">\n";
-	// html_page += "<div class=\"row\">\n";
-	// html_page += "<div class=\"col-md-1\"></div>\n";
-	html_page += "<div class=\"col-6\">\n";
-	html_page += string("	<h1>")+"Index of "+dir_path.substr(1, string::npos)+"</h1>\n";
+	html_page += "<div class=\"row\">\n";
+	html_page += "<div class=\"col-md-1\"></div>\n";
+	html_page += "<div class=\"col-md-10\">\n";
+	html_page += string("	<h3>")+"Index of "+dir_path.substr(1, string::npos)+"</h1>\n";
 	// create Bootstrap table
   	html_page += dir_to_table (dir_path);
 	//Apache Server at cmcstuff.esyr.org Port 80
 	html_page += 	string("	<address style=\"font-style:italic\">")+Config::section("internal")["server_software"]+" at "+
 					Config::section("network")["server_name"]+" Port "+
 					Config::section("network")["server_port"]+"</address>";
-	html_page += "\n";
+	html_page += "</div>\n";
+	html_page += "<div class=\"col-md-1\"></div>\n";
 	html_page += "</div>\n";
 	// html_page += "<div class=\"col-md-3\"></div>\n";
 	html_page += "</div>\n";

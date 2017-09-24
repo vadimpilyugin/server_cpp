@@ -18,6 +18,7 @@ struct FileToSend {
 	FileToSend (string _path, size_t first_byte_pos, size_t last_byte_pos);
 	~FileToSend () { fclose (fp); }
 	size_t fread (size_t n_bytes, char *buf);
+	void rewind_back (size_t n_bytes);
 	string to_s () { return path; };
 	bool is_anything_left () { return bytes_left > 0; }
 	bool is_finished () { return !is_anything_left (); }

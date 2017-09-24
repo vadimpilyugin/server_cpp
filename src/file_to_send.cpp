@@ -19,13 +19,13 @@ FileToSend::FileToSend (string _path, size_t first_byte_pos, size_t last_byte_po
 	// узнаем размер
 	fseek(fp, 0L, SEEK_END);
 	file_size = ftell (fp);
-	fseek(fp, 0L, SEEK_SET);
+	fseek (fp, 0L, SEEK_SET);
 	// устанавливаем разные счетчики
 	portion_size = last_byte - first_byte + 1;
 	current_pos = first_byte;
 	bytes_left = portion_size;
 	// устанавливаем файл на нужную позицию
-	fseek(fp, first_byte, SEEK_SET);
+	fseek (fp, first_byte, SEEK_SET);
 }
 
 size_t FileToSend::fread (size_t n_bytes, char *buf) {
@@ -42,4 +42,10 @@ size_t FileToSend::fread (size_t n_bytes, char *buf) {
 	current_pos += n_bytes;
 	bytes_left -= n_bytes;
 	return n_read;
+}
+
+void FileToSend::rewind_back (size_t n_bytes) {
+	if (n_bytes > current_pos - first_byte)
+		n_bytes = current_pos - first_byte;
+	fseek (fp, current_pos - n_bytes, SEEK_SET);
 }

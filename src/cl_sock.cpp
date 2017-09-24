@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <cstdio>
 
-void ClientSocket::send(const void *buffer, size_t size)
+int ClientSocket::send(const void *buffer, size_t size)
 {
 	if(!isClosed())
 	{
@@ -21,20 +21,7 @@ void ClientSocket::send(const void *buffer, size_t size)
 		// если записали меньше, чем хотели
 		else if (n_written < size) {
 			Printer::error ("послали меньше, чем было в буфере", string("[ClientSocket::send]"));
-			// пытаемся послать еще раз
-			bool isSent = false;
-			int offset = n_written;
-			while (!isSent) {
-				n_written = write(_sd, buffer+offset, size-offset);
-				if (n_written < size-offset) {
-					// repeat
-					offset += n_written;
-				}
-				else {
-					isSent = true;
-				}
-			}
-			// throw ServerException ("послали меньше, чем было в буфере");
+			return n_written;
 		}
 	}
 	else {
@@ -93,7 +80,10 @@ void ClientSocket::sendFile(FileToSend *file_to_send)
 		string ("sendFile ")+to_string (file_to_send -> current_pos-n_read)+
 		"-"+to_string ((file_to_send -> current_pos)-1)+"/"+to_string(file_to_send -> file_size)
 	);
-	send (buf, n_read);
+	int n_written = send (buf, n_read);
+	if (n_written < n_read) {
+		file_to_send -> rewind_back (n_read - n_written);
+	}
 	// FILE *content = fopen(path.c_str(), "r");
 	// if (content == NULL) {
 	// 	Printer::error ("Cannot open file");
@@ -119,6 +109,12 @@ void ClientSocket::sendFile(FileToSend *file_to_send)
 }
 void ClientSocket::sendString(const string &body)
 {
-	// Printer::debug (body, "Наш ответ клиенту на его запрос");
-	send (body.c_str(), body.size());
+	int n_written;
+	if ((n_written = send (body.c_str(), body.size())) < body.size ()) {
+		Printer::error (
+			"послали строку длиной "+to_string(body.size())+", но прошло только "+to_string(n_written),
+			"[ClientSocket::sendString]"	
+		);
+		throw SocketException ("Послали строку не полностью");
+	}
 }
