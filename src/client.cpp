@@ -278,7 +278,7 @@ bool Client::respond () {
 					if (file_attrib.isDirectory ()) {
 						// телом будет таблица с файлами внутри директории
 						resp_body = HtmlHelpers::htmlDirList (path);
-						resp_head = Response::response_200 ("GET", modif_date, "text/html", resp_body.size());
+						resp_head = Response::response_200 ("GET", modif_date, "text/html", resp_body.size(), true);
 						_clientSocket.sendString (resp_head);
 						_clientSocket.sendString (resp_body);
 					}

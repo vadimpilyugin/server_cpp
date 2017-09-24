@@ -64,7 +64,8 @@ class Response {
 public:
 	static string response_code (int errcode);
 	static string response_body (int errcode);
-	static string response_200 (string method, time_t modif_date, string content_type = "", int content_length = 0);
+	static string response_200 (string method, time_t modif_date, string content_type = "", 
+		int content_length = 0, bool isDirectory = false);
 	static string response_206 (	time_t modif_date, string content_type, int content_length,
 																size_t file_size, size_t first_byte_pos, size_t last_byte_pos);
 	static string response_4xx_5xx (int errcode, string method, size_t file_size = 0);
@@ -91,6 +92,8 @@ public:
 	static string table (const vector <string> &thead, const vector <vector <string> > &tbody);
 	// returns an <img> tag
 	static string img (const string &src, string text = "No picture");
+	static string img64 (const string image_64, string text = "No picture");
+	static string div_image (const string image_64, string class_name);
 	// returns an html table filled with directory files
 	static string dir_to_table (const string &dir_path);
 	// returns a string containing html document which lists all files in a directory
