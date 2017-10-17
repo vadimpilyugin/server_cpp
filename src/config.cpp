@@ -18,13 +18,22 @@ void Config::load_file (std::ifstream &config_file) {
 	char c;
 	std::string section;
 	config.clear ();
+	int char_cnt = 0;
+	int lines_cnt = 1;
+	int char_eof;
 	// Hash params;
 	std::string param_name;
 	std::string param_value;
 	States state = States::SECTION_EXPECT;
 	while (state != States::SUCCESS) {
 		// read next character
-		c = config_file.get ();
+		char_eof = config_file.get ();
+		c = char_eof;
+		char_cnt++;
+		if (c == '\n') {
+			lines_cnt++;
+			char_cnt = 0;
+		}
 		switch (state) {
 			case States::SECTION_EXPECT:
 
@@ -37,7 +46,7 @@ void Config::load_file (std::ifstream &config_file) {
 					state = States::SECTION_NAME;
 					section.clear ();
 				}
-				else if (c == std::char_traits<char>::eof()) {
+				else if (char_eof == std::char_traits<char>::eof()) {
 					state = States::SUCCESS;
 				}
 				else {
@@ -80,12 +89,16 @@ void Config::load_file (std::ifstream &config_file) {
 					param_name.clear ();
 					param_name.push_back (c);
 				}
-				else if (c == std::char_traits<char>::eof()) {
+				else if (char_eof == std::char_traits<char>::eof()) {
 					state = States::SUCCESS;
 				}
 				else {
-					Printer::error ("Unexpected character", "PARAMS_EXPECT", {{"Character", to_string (c)}});
-					throw std::string ("Unexpected character: ") + to_string (c);
+					int k = int(c);
+					std::string foo = std::to_string(k);
+					//Printer::fatal("Foobar!");
+					Printer::debug(foo,"This is the character");
+					Printer::error ("Unexpected character", "PARAMS_EXPECT", {{"Character", to_string (c) + ", has "+foo+" character code, at "+std::to_string(char_cnt)+" place in file, at "+std::to_string(lines_cnt)+" line, while EOF="+std::to_string(std::char_traits<char>::eof())}});
+					throw std::string ("Unexpected character: ") + to_string (c) + ", has "+to_string(int(c))+"character code";
 				}
 				break;
 			case States::PARAM_NAME:
