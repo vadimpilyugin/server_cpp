@@ -14,7 +14,7 @@ protected:
 public:
 	Socket(int sd = -1);
 	~Socket();
-	Socket(Socket &&sock) {_sd = sock._sd; sock._sd = -1;}
+	Socket(Socket &&sock) = delete;
 	Socket(Socket &sock) = delete;
 };
 
