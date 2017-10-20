@@ -41,7 +41,8 @@ void Directory::add_slash (string &path) {
 		path.push_back (SLASH);
 }
 void Directory::remove_first_slash (string &path) {
-	path = string (".") + path;
+	if (path.front () == '/')
+		path = string (".") + path;
 }
 vector<FileStat> Directory::ls (string dir_path, bool include_parent) {
 	vector<FileStat> result;
@@ -71,6 +72,7 @@ vector<FileStat> Directory::ls (string dir_path, bool include_parent) {
 	result.insert( result.end(), files.begin(), files.end() );
 	return result;
 }
+
 void Directory::sort_by_modif_date (vector <FileStat> &files) {
 	vector <int> indices;
 	vector <time_t> values;
@@ -81,13 +83,14 @@ void Directory::sort_by_modif_date (vector <FileStat> &files) {
 		values.push_back (file.getModifDate ());
 	}
 	std::sort (indices.begin (), indices.end (), [values] (int i, int j) {
-		return !(values[i] < values[j]);
+		return !(values[i] <= values[j]);
 	});
 	i = 0;
 	for (auto ind: indices) {
 		files[i++] = files_copy[ind];
 	}
 }
+
 vector <string> Directory::list_directory (string &dir_path) {
 	vector <string> result;
 	DIR *dir;
@@ -97,6 +100,7 @@ vector <string> Directory::list_directory (string &dir_path) {
 			if (ent -> d_name[0] != '.')
 				result.emplace_back (ent->d_name);
 		}
+		closedir (dir);
 		return result;
 	}
 	else {

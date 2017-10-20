@@ -2,6 +2,7 @@
 
 #include <string>
 #include <sys/stat.h>
+#include <time.h>
 #include <iostream>
 #include <vector>
 
@@ -31,7 +32,17 @@ public:
 	bool isReadable() const { return _isReadable; }
 	string getMimeType() const { return _mimeType; }
 	string hrModifDate () const {
-		return DateTime::toString (_modifDate, "%a, %e %b %R");
+		// если дата больше, чем неделю
+		if (time (NULL) - _modifDate > 24*3600*7) {
+			return DateTime::toString (_modifDate, "%a, %e %b %R");
+		}
+		// больше, чем день назад
+		else if (time (NULL) - _modifDate > 24*3600)
+			return DateTime::toString (_modifDate, "%a, %R");
+		// сегодня
+		else {
+			return DateTime::toString (_modifDate, "%R");
+		}
 	}
 };
 
