@@ -1,5 +1,5 @@
 # Target: MAIN_TARGET(.c|.cpp) -> MAIN_TARGET
-MAIN_TARGET = Server_v20
+MAIN_TARGET = Server_v22
 
 # File extension
 FILE_EXT=.cpp
@@ -83,20 +83,6 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%$(FILE_EXT)
 clean:
 	rm -rf $(BUILD_DIR)
 	rm -f deps.mk
-
-# Additional targers for testing purposes
-
-.PHONY: debug
-debug: clear $(BIN_DIR)/$(prog)
-	gdb $(BIN_DIR)/$(prog)
-	
-.PHONY: run
-run: clear $(BIN_DIR)/$(prog)
-	$(BIN_DIR)/$(prog)
-
-#.PHONY: test
-#test: $(BIN_DIR)/$(MAIN_TARGET)
-#	make --makefile=tests/Makefile test
 
 # If you still have "WTF?!" feeling, try reading teaching book
 # by Mashechkin & Co. http://unicorn.ejudge.ru/instr.pdf

@@ -20,5 +20,5 @@ public:
 private:
 	bool isClosed ();
 	char *buf;
-	const int BUF_LEN = 65536;
+	const int BUF_LEN = 8192;
 };

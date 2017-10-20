@@ -1,9 +1,0 @@
-#! ./interpreter/interpreter
-
-program
-{
-	int i;
-	if(i + 6)
-		write("Bad");
-	write("Hello! You have entered the following arguments: ", $QUERY_STRING, " from address ", $REMOTE_ADDR);
-}
