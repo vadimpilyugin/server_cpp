@@ -144,7 +144,15 @@ void Client::respond_or_send () {
 	}
 }
 
-void parse_bytes_pos (int &first_byte_pos, int &last_byte_pos, string range) {
+long int long_stoi (std::string s_num) {
+  std::stringstream tmp;
+  tmp << s_num;
+  long int i_num;
+  tmp >> i_num;
+  return i_num;
+}
+
+void parse_bytes_pos (long int &first_byte_pos, long int &last_byte_pos, string range) {
 	// range := "bytes=(\d*)-(\d*)", но не оба нулевые
 	// 					 012345
 	range.erase (0, 6);
@@ -152,18 +160,18 @@ void parse_bytes_pos (int &first_byte_pos, int &last_byte_pos, string range) {
 	if (range[0] == '-') {
 		// 						       "-(\d+)"
 		range.erase (0, 1);
-		last_byte_pos = std::stoi (range);
+		last_byte_pos = long_stoi (range);
 		first_byte_pos = -1;
 	}
 	else {
 		// 				 			"(\d+)-(\d*)"
-		first_byte_pos = std::stoi (range.substr (0, range.find ("-")));
+		first_byte_pos = long_stoi (range.substr (0, range.find ("-")));
 		range.erase (0, range.find ("-")+1);
 		// 						        "(\d*)"
 		if (range.empty ())
 			last_byte_pos = -1;
 		else
-			last_byte_pos = std::stoi (range);
+			last_byte_pos = long_stoi (range);
 	}
 }
 
@@ -190,7 +198,7 @@ void Client::sendFile (string path, FileStat &file_attrib, Hash &request) {
 		// присутствует Range
 		// выделяем начальный и конечный байты
 		size_t first_byte_pos, last_byte_pos;
-		int first_n, last_n;
+		long int first_n, last_n;
 		size_t file_size = file_attrib.getSize ();
 		parse_bytes_pos(first_n, last_n, request["Range"]);
 		Printer::debug (

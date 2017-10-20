@@ -313,7 +313,7 @@ string HtmlHelpers::div_image (const string image_64, string class_name) {
 #define B_IN_MB 1048576
 #define B_IN_KB 1024
 
-string pp_size(int size) {
+string pp_size(long int size) {
 	stringstream pretty_size;
 	if (size / B_IN_GB)
 		pretty_size << std::fixed << std::setprecision(2) << ((size+0.0)/B_IN_GB) << " ГБ";
