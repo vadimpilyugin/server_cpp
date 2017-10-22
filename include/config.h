@@ -20,11 +20,11 @@ class Config {
 	static const char UNDERSCORE = '_';
 
 
-	Config (std::ifstream &config_file);
+	Config (std::ifstream &config_file, std::string filename);
 	Config (Config &) = delete;
 	Config (Config &&) = delete;
 	#if DEBUG
-	std::string to_string (char c) { 
+	std::string to_string (int c) { 
 		if (isspace (c)) {
 			switch (c) {
 				case SPACE: return std::string ("SPACE");
@@ -34,10 +34,11 @@ class Config {
 		}
 		else if (c == std::char_traits<char>::eof()) 
 			return std::string ("EOF");
-		return std::string(1, c);
+		return std::string(1, char(c));
 	}
 	#endif
-	void load_file (std::ifstream &config_file);
+	void fatal_fail (int lines_cnt, int char_cnt, char c, int c_eof, std::string filename);
+	void load_file (std::ifstream &config_file, std::string filename);
 public:
 	Hash &operator[] (const std::string &section);
 	static Config &load (const std::string &filename);
