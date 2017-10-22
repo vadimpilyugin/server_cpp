@@ -10,7 +10,6 @@
 #include "embedded.h"
 using namespace std;
 
-// const string DELIM = "\r\n";
 const string HeaderField::DELIM = "\r\n";
 
 string Response::response_code (int errcode) {
@@ -213,7 +212,6 @@ string UrlEncoder::url_decode(const string &value) {
 
     for (string::const_iterator i = value.begin(), n = value.end(); i != n; ++i) {
         string::value_type c = (*i);
-        // cout << "I can see |"<<c<<"| !" << endl;
         if (c == '%') {
             // read 2 hex digits
             char c1 = *(++i);
@@ -237,46 +235,46 @@ char UrlEncoder::to_c (char c1, char c2) {
 
 string HtmlHelpers::HtmlHelpers::link (string pointer, string name) {
 	pointer = UrlEncoder::url_encode (pointer, false);
-	return string ("<a href=\"")+pointer+"\">"+name+"</a>";
+	return string ("<a href='")+pointer+"'>"+name+"</a>";
 }
 string HtmlHelpers::header (string name) {
 	string head;
   	head += "<head>\n";
-    head += "<meta charset=\"utf-8\">\n";
+    head += "<meta charset='utf-8'>\n";
     head += string ("<title>")+name+"</title>\n";
-  	head += string ("<style media=\"screen\" type=\"text/css\">")+div_image(folder_base64, ".folder")+"</style>\n";
-  	head += string ("<style media=\"screen\" type=\"text/css\">")+div_image(file_base64, ".file")+"</style>\n";
-  	head += string ("<style media=\"screen\" type=\"text/css\">")+div_image(back_base64, ".back")+"</style>\n";
-  	// head += "<link rel=\"stylesheet\" href=\"/internal/css/bootstrap.min.css\">\n";
-  	head += string ("<style media=\"screen\" type=\"text/css\">")+bootstrap_min_css+"</style>\n";
-  	// head += "<script type=\"text/javascript\" src=\"/internal/js/jquery.min.js\"></script>\n";
-  	head += string ("<script type=\"text/javascript\">")+jquery_min_js+"</script>\n";
-  	// head += "<script type=\"text/javascript\" src=\"/internal/js/bootstrap.min.js\"></script>\n";
-  	head += string ("<script type=\"text/javascript\" >")+bootstrap_min_js+"</script>\n";
+  	head += string ("<style media='screen' type='text/css'>")+div_image(folder_base64, ".folder")+"</style>\n";
+  	head += string ("<style media='screen' type='text/css'>")+div_image(file_base64, ".file")+"</style>\n";
+  	head += string ("<style media='screen' type='text/css'>")+div_image(back_base64, ".back")+"</style>\n";
+  	head += string ("<style media='screen' type='text/css'>")+bootstrap_min_css+"</style>\n";
+  	head += string ("<style media='screen' type='text/css'>")+bootstrap_sortable_css+"</style>\n";
+  	head += string ("<link rel='shortcut icon' type='image/png' href='data:image/png;base64,")+favicon_base64+"'/>\n";
+  	head += string ("<script type='text/javascript'>")+jquery_min_js+"</script>\n";
+  	head += string ("<script type='text/javascript' >")+bootstrap_min_js+"</script>\n";
+  	head += string ("<script type='text/javascript' >")+myscript_js+"</script>\n";
+  	head += string ("<script type='text/javascript' >")+bootstrap_sortable_js+"</script>\n";
+  	head += string ("<script type='text/javascript' >")+moment_min_js+"</script>\n";
   	head += "</head>\n";
   	return head;
 }
-string HtmlHelpers::table (const vector <string> &thead, const vector <vector <string> > &tbody) {
-	string table = "<table class=\"table table-hover\">\n";
+string HtmlHelpers::table (const vector <string> &header, vector <Hash> &rows) {
+	string table = "<table class='table table-hover sortable'>\n";
 	table += "	  <thead>\n";
 	table += "	 	  <tr>\n";
-	// for (auto &i: thead) {
-		table += string ("			<th class=\"col-xs-1\">") + thead[0] + string ("</th>\n");
-		table += string ("			<th class=\"col-xs-6\">") + thead[1] + string ("</th>\n");
-		table += string ("			<th class=\"col-xs-2\">") + thead[2] + string ("</th>\n");
-		table += string ("			<th class=\"col-xs-2\">") + thead[3] + string ("</th>\n");
-	// }
+	for (auto &th: header)
+		table += string ("			<th class='col-xs-1'>") + th + string ("</th>\n");
 	table += "		  </tr>\n";
 	table += "	  </thead>\n";
 	table += "	<tbody>\n";
-	for (auto &row: tbody) {
-		table += "		<tr>\n";
-		// for (auto &elem: row) {
-			table += string ("			<td class=\"col-xs-1\">") + row[0] + string ("</td>\n");
-			table += string ("			<td class=\"col-xs-6\">") + row[1] + string ("</td>\n");
-			table += string ("			<td class=\"col-xs-2\">") + row[2] + string ("</td>\n");
-			table += string ("			<td class=\"col-xs-2\">") + row[3] + string ("</td>\n");
-		// }
+	for (auto &row: rows) {
+		table += "		<tr class='clickable-row' data-href='"+row["item-link"]+"'>\n";
+		table += string ("			<td class='col-xs-1' data-value='")+row["item-rank"]+"'>"+
+			row["item-pic"]+"</td>\n";
+		table += string ("			<td class='col-xs-6' data-value='") +
+			row["item-name"]+"'> <a href='"+row["item-link"]+"'>"+row["item-name"]+"</a> </td>\n";
+		table += string ("			<td class='col-xs-2' data-value='"+row["item-modif-date"]+"'>") + 
+			row["item-hr-modif-date"]+"</td>\n";
+		table += string ("			<td class='col-xs-2' data-value='"+row["item-size"]+"'>") + 
+			row["item-hr-size"]+"</td>\n";
 		table += "		</tr>\n";
 	}
 	table += "	</tbody>\n";
@@ -284,31 +282,17 @@ string HtmlHelpers::table (const vector <string> &thead, const vector <vector <s
 	return table;
 }
 string HtmlHelpers::img (const string &src, string text) {
-	return string ("<img src=\"")+src+"\" alt=\""+text+"\">";
+	return string ("<img src='")+src+"' alt='"+text+"'>";
 }
 string HtmlHelpers::img64 (const string image_64, string text) {
-	return string ("<img src=\"data:image/png;base64,")+image_64+"\" alt=\""+text+"\">";
+	return string ("<img src='data:image/png;base64,")+image_64+"' alt='"+text+"'>";
 }
 
 string HtmlHelpers::div_image (const string image_64, string class_name) {
 	return class_name+string(" {width:30px;height:30px;background:url(data:image/png;")+
 		string("base64,")+image_64+");}";
 }
-// def pp_size(size)
-// 	if size / $B_IN_GB != 0
-// 		"#{((size+0.0)/$B_IN_GB).round(1)} ГБ"
-// 	elsif size / $B_IN_MB != 0
-// 		if size / $B_IN_MB > 10
-// 			"#{size/$B_IN_MB} МБ"
-// 		else
-// 			"#{((size+0.0)/$B_IN_MB).round(1)} МБ"
-// 		end
-// 	elsif size / $B_IN_KB != 0
-// 		"#{size/$B_IN_KB} КБ"
-// 	else
-// 		"#{size} Б"
-// 	end
-// end
+
 #define B_IN_GB 1073741824
 #define B_IN_MB 1048576
 #define B_IN_KB 1024
@@ -330,66 +314,101 @@ string pp_size(long int size) {
 }
 
 string HtmlHelpers::dir_to_table (const string &dir_path) {
+	const string NO_INFO = "-";
+	const string UP_NAME = "Up";
+	const string ZERO_SIZE = "0";
+	const string BACK_PIC = "<div class='back'></div>";
+	const string FOLDER_PIC = "<div class='folder'></div>";
+	const string FILE_PIC = "<div class='file'></div>";
+	const string PARENT_RANK = "0";
+	const string FOLDER_RANK = "1";
+	const string FILE_RANK = "2";
+
 	vector <FileStat> files = Directory::ls (dir_path);
-	vector <vector <string> > entries;
+	vector <Hash> entries;
+	// Table row example:
+	//		item-rank => Back - 0, Folder - 1, File - 2
+	// 		item-pic => <div class="back"></div>
+	// 		item-link => /Downloads/foobar.txt
+	// 		item-name => foobar.txt
+	// 		item-hr-modif-date => Tue, 26 Sep 18:25
+	// 		item-modif-date => 1508679866
+	// 		item-hr-size => 2.37 МБ
+	// 		item-size => 2486173
 	if (dir_path != Directory::ROOT) {
-		string sendto = link (files[0].getPath (), "Up");
 		entries.push_back ({
-			// img ("/internal/img/back.gif"), 
-			// img64 (back_base64), 
-			"<div class=\"back\"></div>", 
-			sendto, 
-			files[0].hrModifDate (), 
-			"-"
+			{"item-rank", PARENT_RANK},
+			{"item-pic", BACK_PIC},
+			{"item-link", files.front ().getPath ()},
+			{"item-name", UP_NAME},
+			{"item-hr-modif-date", NO_INFO},
+			{"item-modif-date", std::to_string (files.front ().getModifDate ())},
+			{"item-hr-size", NO_INFO},
+			{"item-size", ZERO_SIZE},
 		});
 	}
 	for (size_t i = 1; i < files.size (); i++) {
 		string sendto = link (files[i].getPath (), files[i].getName ());
 		if (files[i].isDirectory ()) {
-			// string icon = "<i class=\"fa fa-folder fa-2x \" style=\"color:#0099CC\"></i>";
-			// string icon = "<img src=\"/internal/img/folder.png\">";
-			// string icon = img64 (folder_base64);
-			string icon = "<div class=\"folder\"></div>";
-			entries.push_back ({icon, sendto, files[i].hrModifDate (), "-"});
+			string icon = "<a href='"+files[i].getPath ()+"'><div class='folder'></div></a>";
+			entries.push_back ({
+				{"item-rank", FOLDER_RANK},
+				{"item-pic", FOLDER_PIC},
+				{"item-link", files[i].getPath ()},
+				{"item-name", files[i].getName ()},
+				{"item-hr-modif-date", files[i].hrModifDate ()},
+				{"item-modif-date", std::to_string (files[i].getModifDate ())},
+				{"item-hr-size", NO_INFO},
+				{"item-size", ZERO_SIZE}
+			});
 		}
 		else {
-			string file_size = pp_size (files[i].getSize ());
-			// string icon = "<i class=\"fa fa-file-o\" style=\"font-size:30px\"></i>";
-			// string icon = "<img src=\"/internal/img/file.png\">";
-			// string icon = img64 (file_base64);
-			string icon = "<div class=\"file\"></div>";
-			entries.push_back ({icon, sendto, files[i].hrModifDate (), file_size});
+			string icon = "<a href='"+files[i].getPath ()+"'><div class='file'></div></a>";
+			entries.push_back ({
+				{"item-rank", FILE_RANK},
+				{"item-pic", FILE_PIC},
+				{"item-link", files[i].getPath ()},
+				{"item-name", files[i].getName ()},
+				{"item-hr-modif-date", files[i].hrModifDate ()},
+				{"item-modif-date", std::to_string (files[i].getModifDate ())},
+				{"item-hr-size", pp_size (files[i].getSize ())},
+				{"item-size", std::to_string (files[i].getSize ())}
+			});
 		}
 	}
 	return table ({"", "Имя", "Изменено", "Размер"}, entries);
 }
 string HtmlHelpers::htmlDirList (const string &dir_path) {
+
 	// HTML Header
 	string html_page = 
 	"<!DOCTYPE html>\n"
-	"<html lang=\"en\">\n";
+	"<html lang='en'>\n";
 	html_page += header (string("Index of ")+dir_path.substr(1, string::npos));
+
 	// HTML Body
 	html_page += "<body>\n";
-	html_page += "<div class=\"container\">\n";
-	// html_page += "<div class=\"section\">\n";
-	html_page += "<div class=\"row\">\n";
-	html_page += "<div class=\"col-md-1\"></div>\n";
-	html_page += "<div class=\"col-md-10\">\n";
+	html_page += "<div class='container'>\n";
+	html_page += "<div class='row'>\n";
+	html_page += "<div class='col-md-1'></div>\n";
+	html_page += "<div class='col-md-10'>\n";
 	html_page += string("	<h3>")+"Index of "+dir_path.substr(1, string::npos)+"</h1>\n";
+
 	// create Bootstrap table
   	html_page += dir_to_table (dir_path);
+
 	//Apache Server at cmcstuff.esyr.org Port 80
-	html_page += 	string("	<address style=\"font-style:italic\">")+Config::section("internal")["server_software"]+" at "+
+	html_page += 	string("	<address style='font-style:italic'>")+Config::section("internal")["server_software"]+" at "+
 					Config::section("network")["server_name"]+" Port "+
 					Config::section("network")["server_port"]+"</address>";
 	html_page += "</div>\n";
-	html_page += "<div class=\"col-md-1\"></div>\n";
+	html_page += "<div class='col-md-1'></div>\n";
 	html_page += "</div>\n";
-	// html_page += "<div class=\"col-md-3\"></div>\n";
 	html_page += "</div>\n";
+
 	// close HTML body
-  	html_page += "</body>\n";
-  	html_page += "</html>\n";
+	html_page += "</body>\n";
+	html_page += "</html>\n";
+
 	return html_page;
 }

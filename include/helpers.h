@@ -1,6 +1,7 @@
 #include "config.h"
 #include "datetime.h"
 #include "excp.h"
+#include "printer.hpp"
 
 #include <vector>
 using namespace std;
@@ -89,7 +90,7 @@ public:
 	// returns a string with filled <head>
 	static string header (string name);
 	// returns a string with html table with bootstrap styles
-	static string table (const vector <string> &thead, const vector <vector <string> > &tbody);
+	static string table (const vector <string> &thead, vector <Hash> &tbody);
 	// returns an <img> tag
 	static string img (const string &src, string text = "No picture");
 	static string img64 (const string image_64, string text = "No picture");
