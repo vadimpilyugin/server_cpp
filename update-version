@@ -79,33 +79,49 @@ class Printer
   end
 end
 
+def undot(ver)
+  ver.to_s.gsub /\./, ""
+end
 
-def dot_ver(ver)
-  ((ver+0.0)/10).round(1)
+# print usage
+if ARGV.size != 1
+  puts "Usage: update-version new_version"
+  exit 0
 end
 
 # get version
-File.read('Makefile') =~ /Server_v(?<ver>\d+)/
-version = $~['ver'].to_i
-new_version = version+1
+File.read('config.cfg') =~ /HTTP Model Server v(?<ver>[\d\.]+)/
+version_dotted = $~['ver']
+new_version_dotted = ARGV[0]
+new_version = undot(new_version_dotted)
 
 # files to update
 file_names = ['Makefile', 'config.cfg', 'init']
 
 # modification data
-regexes = [/Server_v\d+/, /HTTP Model Server v\d+\.\d+/, /Server_v\d+/]
-strings = ["Server_v#{new_version}", "HTTP Model Server v#{dot_ver(new_version)}", "Server_v#{new_version}"]
+regexes = [/Server_v\d+/, /HTTP Model Server v[\d\.]+/, /Server_v\d+/]
+strings = ["Server_v#{new_version}", "HTTP Model Server v#{new_version_dotted}", "Server_v#{new_version}"]
 
 # 
-Printer::debug(who:"Update version", msg:"#{dot_ver(version)} ~> #{dot_ver(new_version)}")
+Printer::debug(who:"#{version_dotted} ~> #{new_version_dotted}")
 file_names.each_with_index do |file_name,i|
-  printf "Apply changes to <#{file_name}> Y/n? "
-  s = gets.chomp
-  next if s. != 'Y'.downcase
-  text = File.read(file_name)
-  new_contents = text.gsub(regexes[i], strings[i])
+  # puts "Applying changes to <#{file_name}>"
+  Printer::debug who:"----------- #{file_name} -------------"
+  # STDIN.gets
+  new_contents = ""
+  File.open(file_name) do |opened_file|
+    opened_file.each_line do |line|
+      if line =~ regexes[i]
+        line = line.gsub(regexes[i], strings[i])
+        puts line
+      end
+      new_contents << line
+    end
+  end
+  # text = File.read(file_name)
+  # new_contents = text.gsub(regexes[i], strings[i])
   # To merely print the contents of the file, use:
-  puts new_contents
+  # puts new_contents
 
   # To write changes to the file, use:
   File.open(file_name, "w") {|file| file.puts new_contents }
