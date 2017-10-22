@@ -1,3 +1,5 @@
+#!/home/vadim/.rbenv/shims/ruby
+
 class String
   # @private
   def colorize(i)
@@ -88,11 +90,11 @@ version = $~['ver'].to_i
 new_version = version+1
 
 # files to update
-file_names = ['Makefile', 'config.cfg']
+file_names = ['Makefile', 'config.cfg', 'init']
 
 # modification data
-regexes = [/Server_v\d+/, /HTTP Model Server v\d+\.\d+/]
-strings = ["Server_v#{new_version}", "HTTP Model Server v#{dot_ver(new_version)}"]
+regexes = [/Server_v\d+/, /HTTP Model Server v\d+\.\d+/, /Server_v\d+/]
+strings = ["Server_v#{new_version}", "HTTP Model Server v#{dot_ver(new_version)}", "Server_v#{new_version}"]
 
 # 
 Printer::debug(who:"Update version", msg:"#{dot_ver(version)} ~> #{dot_ver(new_version)}")
