@@ -1,7 +1,7 @@
 #include "config.h"
 #include <sys/stat.h>
 
-#define CONFIG_DEBUG 1
+#define CONFIG_DEBUG 0
 int Config::counter = 0;
 
 enum class States {
@@ -56,7 +56,7 @@ void Config::load_file (std::ifstream &config_file, std::string filename) {
 			case States::SECTION_EXPECT:
 
 				#if CONFIG_DEBUG
-				Printer::debug (to_string (c), "SECTION_EXPECT");
+				Printer::debug (to_string (c_eof), "SECTION_EXPECT");
 				#endif
 				if (isspace (c))
 					;
@@ -73,7 +73,7 @@ void Config::load_file (std::ifstream &config_file, std::string filename) {
 				break;
 			case States::SECTION_NAME:
 				#if CONFIG_DEBUG
-				Printer::debug (to_string (c), "SECTION_NAME");
+				Printer::debug (to_string (c_eof), "SECTION_NAME");
 				#endif
 				if (isalpha (c) || isdigit (c) || c == UNDERSCORE) {
 					section.push_back (c);
@@ -92,7 +92,7 @@ void Config::load_file (std::ifstream &config_file, std::string filename) {
 				break;
 			case States::PARAMS_EXPECT:
 				#if CONFIG_DEBUG
-				Printer::debug (to_string (c), "PARAMS_EXPECT");
+				Printer::debug (to_string (c_eof), "PARAMS_EXPECT");
 				#endif
 				if (isspace (c))
 					;
@@ -114,7 +114,7 @@ void Config::load_file (std::ifstream &config_file, std::string filename) {
 				break;
 			case States::PARAM_NAME:
 				#if CONFIG_DEBUG
-				Printer::debug (to_string (c), "PARAM_NAME");
+				Printer::debug (to_string (c_eof), "PARAM_NAME");
 				#endif
 				if (isalpha (c) || isdigit (c) || c == UNDERSCORE) {
 					param_name.push_back (c);
@@ -131,7 +131,7 @@ void Config::load_file (std::ifstream &config_file, std::string filename) {
 				break;
 			case States::DELIM_EXPECT:
 				#if CONFIG_DEBUG
-				Printer::debug (to_string (c), "DELIM_EXPECT");
+				Printer::debug (to_string (c_eof), "DELIM_EXPECT");
 				#endif
 				if (isspace (c))
 					;
@@ -143,7 +143,7 @@ void Config::load_file (std::ifstream &config_file, std::string filename) {
 				break;
 			case States::PARAM_VALUE_EXPECT:
 				#if CONFIG_DEBUG
-				Printer::debug (to_string (c), "PARAM_VALUE_EXPECT");
+				Printer::debug (to_string (c_eof), "PARAM_VALUE_EXPECT");
 				#endif
 				if (isspace (c))
 					;
@@ -157,7 +157,7 @@ void Config::load_file (std::ifstream &config_file, std::string filename) {
 				break;
 			case States::PARAM_VALUE:
 				#if CONFIG_DEBUG
-				Printer::debug (to_string (c), "PARAM_VALUE");
+				Printer::debug (to_string (c_eof), "PARAM_VALUE");
 				#endif
 				if (c == QUOTES) {
 					state = States::PARAMS_EXPECT;
