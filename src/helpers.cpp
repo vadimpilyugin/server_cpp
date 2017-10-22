@@ -339,7 +339,7 @@ string HtmlHelpers::dir_to_table (const string &dir_path) {
 		entries.push_back ({
 			{"item-rank", PARENT_RANK},
 			{"item-pic", BACK_PIC},
-			{"item-link", files.front ().getPath ()},
+			{"item-link", UrlEncoder::url_encode(files.front ().getPath (),false)},
 			{"item-name", UP_NAME},
 			{"item-hr-modif-date", NO_INFO},
 			{"item-modif-date", std::to_string (files.front ().getModifDate ())},
@@ -354,7 +354,7 @@ string HtmlHelpers::dir_to_table (const string &dir_path) {
 			entries.push_back ({
 				{"item-rank", FOLDER_RANK},
 				{"item-pic", FOLDER_PIC},
-				{"item-link", files[i].getPath ()},
+				{"item-link", UrlEncoder::url_encode(files[i].getPath (),false)},
 				{"item-name", files[i].getName ()},
 				{"item-hr-modif-date", files[i].hrModifDate ()},
 				{"item-modif-date", std::to_string (files[i].getModifDate ())},
@@ -367,7 +367,7 @@ string HtmlHelpers::dir_to_table (const string &dir_path) {
 			entries.push_back ({
 				{"item-rank", FILE_RANK},
 				{"item-pic", FILE_PIC},
-				{"item-link", files[i].getPath ()},
+				{"item-link", UrlEncoder::url_encode(files[i].getPath (),false)},
 				{"item-name", files[i].getName ()},
 				{"item-hr-modif-date", files[i].hrModifDate ()},
 				{"item-modif-date", std::to_string (files[i].getModifDate ())},

@@ -1,5 +1,5 @@
 # Target: MAIN_TARGET(.c|.cpp) -> MAIN_TARGET
-MAIN_TARGET = Server_v23
+MAIN_TARGET = Server_v231
 
 # File extension
 FILE_EXT=.cpp

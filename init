@@ -1,3 +1,3 @@
 #! /bin/bash
 make all
-build/bin/Server_v23
+build/bin/Server_v231
