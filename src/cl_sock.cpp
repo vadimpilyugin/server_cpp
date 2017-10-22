@@ -84,28 +84,6 @@ void ClientSocket::sendFile(FileToSend *file_to_send)
 	if (n_written < n_read) {
 		file_to_send -> rewind_back (n_read - n_written);
 	}
-	// FILE *content = fopen(path.c_str(), "r");
-	// if (content == NULL) {
-	// 	Printer::error ("Cannot open file");
-	// 	throw ClientException (strerror (errno));
-	// }
-	// else
-	// 	Printer::debug ("Файл открыт");
-	// int i = 0;
-	// while(!feof(content))
-	// {
-	// 	n = fread(buf, sizeof(char), BUF_LEN, content);
-	// 	if (n < BUF_LEN && !feof(content)) {
-	// 		Printer::error ("Reading error");
-	// 		throw ClientException (strerror (errno));
-	// 	}
-	// 	else
-	// 		Printer::debug (string("[")+to_string(i++)+"]"+"Посылаем " +to_string(n)+" байт");
-	// 	send(buf, n);
-	// }
-	// 
-	// fclose(content);
-	// Printer::debug ("Посылка закончена");
 }
 void ClientSocket::sendString(const string &body)
 {
