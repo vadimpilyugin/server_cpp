@@ -33,7 +33,8 @@ namespace Printer {
     using Exception::Exception;
   };
 
-
+  // равен true, когда предыдущая запись была in place
+  static bool prev_in_place = false;
 
   static const char black[]   = { 0x1b, '[', '1', ';', '3', '0', 'm', 0 };
   static const char red[]     = { 0x1b, '[', '1', ';', '3', '1', 'm', 0 };
@@ -76,10 +77,19 @@ namespace Printer {
                           const bool in_place = false, const Hash &params = {}, 
                           const std::string &msg_color = white,
                           const std::string &delim = detail::delim, const bool newline = true) {
+
+      // если предыдущая запись была in place, а текущая - нет
+      if (prev_in_place && !in_place) {
+        // очищаем строку
+        std::cerr << detail::lf << detail::lf;
+        prev_in_place = false;
+      }
       std::cerr << who_color << who << delim << msg_color << msg;
       if(newline) {
-        if(in_place)
+        if(in_place) {
+          prev_in_place = true;
           std::cerr << detail::cr;
+        }
         else {
           std::cerr << detail::lf;
           for (const auto &pair: params) {
