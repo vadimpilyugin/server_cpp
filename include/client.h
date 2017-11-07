@@ -23,15 +23,17 @@ class Client
 	bool isSending;
 	FileToSend *file_to_send;
 	bool isResponseNeeded;
+	static const string END_OF_REQUEST; 
 public:
 	
 	Client(int sd, SocketAddress &address);
 	Client(Client &&cl) = delete;
 	~Client();
 	void appendRequest();
-	bool isReceiveEnded() const {return (_http_request.rfind("\r\n\r\n") != string::npos);}
-	void respond_or_send ();
-	bool respond();
+	bool isRequestReceived() const {return _http_request.find(END_OF_REQUEST) != string::npos;}
+	string cut_request ();
+	void continue_file_sending ();
+	void respond();
 	int getNo() const {return _clientNo;};
 	void init_file_sending (Hash &request);
 	void do_sending(Hash&);

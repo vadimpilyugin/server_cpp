@@ -23,6 +23,10 @@ int ClientSocket::send(const void *buffer, size_t size)
 			Printer::error ("послали меньше, чем было в буфере", string("[ClientSocket::send]"));
 			return n_written;
 		}
+		else {
+			// все хорошо, возвращаем столько, сколько записали
+			return n_written;
+		}
 	}
 	else {
 		Printer::debug ("сокет закрыт для записи", "[ClientSocket::send]");
@@ -69,20 +73,24 @@ bool ClientSocket::isClosed()
 
 void ClientSocket::sendFile(FileToSend *file_to_send)
 {
+	// если указатель на файл нулевой
 	if (file_to_send == nullptr) {
+		// выкидываем исключение
 		Printer::error ("переданный указатель на FileToSend нулевой", "[ClientSocket::sendFile]");
 		throw ServerException ("Переданный указатель на FileToSend нулевой!");
 	}
 	// указатель не нулевой
 	size_t n_read = file_to_send -> fread (BUF_LEN, buf);
 	Printer::debug (
-		string ("посылаем ")+to_string (n_read)+" байт",
+		Timer::hr_speed (bytes_sent, t.get ()),
 		string ("sendFile ")+to_string (file_to_send -> current_pos-n_read)+
 		"-"+to_string ((file_to_send -> current_pos)-1)+"/"+to_string(file_to_send -> file_size),
 		{},
 		true
 	);
 	int n_written = send (buf, n_read);
+	// записываем байты в число посланных
+	bytes_sent += n_written;
 	if (n_written < n_read) {
 		file_to_send -> rewind_back (n_read - n_written);
 	}
