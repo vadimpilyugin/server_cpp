@@ -43,7 +43,7 @@ int main()
 					(*it) -> checkCgiProgs();
 					// если посылаем файл и готов к записи
 					if ((*it) -> isSendingFile () && set.isReadyToWrite ((*it) -> getSock ())) {
-						Printer::debug ("Клиент ["+to_string((*it)->getNo())+"] принимает файл и готов к записи!");
+						// Printer::debug ("Клиент ["+to_string((*it)->getNo())+"] принимает файл и готов к записи!");
 						(*it) -> respond_or_send ();
 					}
 					// если пришел запрос по сети либо нужен был ответ ранее

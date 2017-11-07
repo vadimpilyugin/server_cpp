@@ -78,7 +78,9 @@ void ClientSocket::sendFile(FileToSend *file_to_send)
 	Printer::debug (
 		string ("посылаем ")+to_string (n_read)+" байт",
 		string ("sendFile ")+to_string (file_to_send -> current_pos-n_read)+
-		"-"+to_string ((file_to_send -> current_pos)-1)+"/"+to_string(file_to_send -> file_size)
+		"-"+to_string ((file_to_send -> current_pos)-1)+"/"+to_string(file_to_send -> file_size),
+		{},
+		true
 	);
 	int n_written = send (buf, n_read);
 	if (n_written < n_read) {
