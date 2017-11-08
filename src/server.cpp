@@ -41,15 +41,22 @@ int main()
 			while(it != clients_list.end()) {
 				try {
 					(*it) -> checkCgiProgs();
+					// если клиент прислал очередную порцию данных
+					if (set.isReadyToRead ((*it) -> getSock ())) {
+						Printer::debug ("Клиент ["+to_string((*it)->getNo())+"] готов к чтению!");
+						// (*it) -> respond_or_send ();
+						// добавляем данные в буфер
+						(*it) -> appendRequest ();
+					}
 					// если посылаем файл и готов к записи
 					if ((*it) -> isSendingFile () && set.isReadyToWrite ((*it) -> getSock ())) {
-						Printer::debug ("Клиент ["+to_string((*it)->getNo())+"] принимает файл и готов к записи!");
-						(*it) -> respond_or_send ();
+						// Printer::debug ("Клиент ["+to_string((*it)->getNo())+"] принимает файл и готов к записи!");
+						(*it) -> continue_file_sending ();
 					}
-					// если пришел запрос по сети либо нужен был ответ ранее
-					else if (set.isReadyToRead ((*it) -> getSock ()) || (*it) -> isResponseToClientNeeded ()) {
-						Printer::debug ("Клиент ["+to_string((*it)->getNo())+"] готов к чтению!");
-						(*it) -> respond_or_send ();
+					// если в буфере есть готовый запрос и мы закончили отвечать на предыдущий запрос
+					else if (!(*it) -> isSendingFile () && (*it) -> isResponseToClientNeeded ()) {
+						// отвечаем клиенту
+						(*it) -> respond ();
 					}
 					++it;
 				}

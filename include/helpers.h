@@ -7,10 +7,16 @@
 using namespace std;
 
 class HeaderField {
+
 public:
+	static const string CUSTOM_HEADER;
+
 	static const string DELIM;
 	static string server_field () {
 		return string ("Server: ") + Config::section("internal")["server_software"] + DELIM;
+	}
+	static string expires_now_field () {
+		return string ("Expires: -1") + DELIM;
 	}
 	static string allow_field () {
 		return string ("Allow: ") + Config::section("internal")["supported_methods"] + DELIM;
@@ -20,6 +26,9 @@ public:
 	}
 	static string range_field () {
 		return string ("Accept-Ranges: bytes") + DELIM;
+	}
+	static string authenticate_field () {
+		return string ("WWW-Authenticate: Basic realm=\"Home folder\"") + DELIM;
 	}
 	static string content_range_field (size_t file_size, int first_byte_pos = -1, int last_byte_pos = -1) {
 		// если ни начало, ни конец не указаны
@@ -66,10 +75,28 @@ public:
 	static string response_code (int errcode);
 	static string response_body (int errcode);
 	static string response_200 (string method, time_t modif_date, string content_type = "", 
-		int content_length = 0, bool isDirectory = false);
+		int content_length = 0, bool isDirectory = false, bool isApi = false);
 	static string response_206 (	time_t modif_date, string content_type, int content_length,
 																size_t file_size, size_t first_byte_pos, size_t last_byte_pos);
 	static string response_4xx_5xx (int errcode, string method, size_t file_size = 0);
+	// static string response_401 (int errcode, string method, size_t file_size = 0);
+};
+
+class ResponseCode {
+public:
+	static const int OK = 200;
+	static const int NOT_AUTHORIZED = 401;
+	static const int FORBIDDEN = 403;
+	static const int NOT_FOUND = 404;
+	static const int RANGE_NOT_SATISFIABLE = 416;
+	static const int INTERNAL_ERROR = 500;
+	static const int NOT_IMPLEMENTED = 501;
+};
+
+class Methods {
+public:
+	static const string GET_METHOD;
+	static const string HEAD_METHOD;
 };
 
 class UrlEncoder {

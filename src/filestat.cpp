@@ -1,11 +1,14 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <algorithm>
+#include <cctype>
+#include <iomanip>
+#include <sstream>
 using namespace std;
 
 #include "filestat.h"
 #include "config.h"
-#include "printer.hpp"
+
 
 // vector <string> FileStat::getFileAttrib () const {
 // 	const size_t KB_IN_BYTES = 1024;
@@ -16,6 +19,9 @@ using namespace std;
 const char *Directory::THIS_DIR = ".";
 const char *Directory::PARENT_DIR = "..";
 const char *Directory::ROOT = "./";
+
+const string FileStat::HTML_TYPE = "text/html";
+const string FileStat::JSON_TYPE = "text/json";
 
 void Directory::remove_slash (string &path) {
 	if (path != ROOT && path.back () == SLASH)
@@ -110,7 +116,7 @@ vector <string> Directory::list_directory (string &dir_path) {
 	}
 }
 
-FileStat::FileStat (string path){
+FileStat::FileStat (string path) {
 	struct stat file_attrib;
 	if (stat (path.c_str (), &file_attrib) == -1)
 		throw FileException (path);
@@ -126,6 +132,26 @@ FileStat::FileStat (string path){
 	_isDirectory = S_ISDIR (file_attrib.st_mode);
 	_isReadable = file_attrib.st_mode & (S_IRGRP | S_IRUSR | S_IROTH);
 	_mimeType = mimeType (_name);
+}
+
+string FileStat::pp_size(long int size) {
+	const size_t B_IN_GB = 1073741824;
+	const size_t B_IN_MB = 1048576;
+	const size_t B_IN_KB = 1024;
+
+	stringstream pretty_size;
+	if (size / B_IN_GB)
+		pretty_size << std::fixed << std::setprecision(2) << ((size+0.0)/B_IN_GB) << " ГБ";
+	else if (size / B_IN_MB)
+		if (size / B_IN_MB >= 10)
+			pretty_size << size / B_IN_MB << " МБ";
+		else
+			pretty_size << std::fixed << std::setprecision(2) << ((size+0.0)/B_IN_MB) << " МБ";
+	else if (size / B_IN_KB)
+		pretty_size << size / B_IN_KB << " КБ";
+	else
+		pretty_size << size << " Б";
+	return pretty_size.str();
 }
 
 string FileStat::mimeType (string &path)

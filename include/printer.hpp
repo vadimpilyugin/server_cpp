@@ -33,62 +33,48 @@ namespace Printer {
     using Exception::Exception;
   };
 
+  // равен true, когда предыдущая запись была in place
+  extern bool prev_in_place;
 
-
-  static const char black[]   = { 0x1b, '[', '1', ';', '3', '0', 'm', 0 };
-  static const char red[]     = { 0x1b, '[', '1', ';', '3', '1', 'm', 0 };
-  static const char green[]   = { 0x1b, '[', '1', ';', '3', '2', 'm', 0 };
-  static const char yellow[]  = { 0x1b, '[', '1', ';', '3', '3', 'm', 0 };
-  static const char blue[]    = { 0x1b, '[', '1', ';', '3', '4', 'm', 0 };
-  static const char magenta[] = { 0x1b, '[', '1', ';', '3', '5', 'm', 0 };
-  static const char cyan[]    = { 0x1b, '[', '1', ';', '3', '6', 'm', 0 };
-  static const char white[]   = { 0x1b, '[', '1', ';', '3', '7', 'm', 0 };
+  extern const char black[];
+  extern const char red[];
+  extern const char green[];
+  extern const char yellow[];
+  extern const char blue[];
+  extern const char magenta[];
+  extern const char cyan[];
+  extern const char white[];
 
   namespace detail {
     /*
     * Сообщения по умолчанию, выводящиеся перед двоеточием
     */
-    static const std::string debug_msg  = std::string("Debug");
-    static const std::string assert_msg = std::string("Assertion failed");
-    static const std::string error_msg  = std::string("Error");
-    static const std::string fatal_msg  = std::string("Fatal error");
-    static const std::string note_msg   = std::string("Note");
-    static const std::string empty_msg  = std::string("");
+    extern const std::string debug_msg;
+    extern const std::string assert_msg;
+    extern const std::string error_msg;
+    extern const std::string fatal_msg;
+    extern const std::string note_msg;
+    extern const std::string empty_msg;
     /*
     * Символы для разделения сообщения и отправителя
     */
-    static const std::string delim = std::string(": ");
+    extern const std::string delim;
     /*
     * Символы для перевода строки
     */
-    static const std::string cr = std::string("\r");
-    static const std::string lf = std::string("\n");
-    // static const std::string debug_msg_color  = std::string(green);
-    // static const std::string assert_msg_color = std::string(red);
-    // static const std::string error_msg_color  = std::string(red);
-    // static const std::string fatal_msg_color  = std::string(red);
-    // static const std::string note_msg_color   = std::string(yellow);
-    // static const std::string msg_color        = std::string(white);
+    extern const std::string cr;
+    extern const std::string lf;
+    extern const std::string tab;
+    extern const std::string space;
     /*
     * Функция вывода сообщения с именем отправителя. Занимается форматированием, цветом, выводом
     */
-    static void generic(  const std::string &msg, const std::string &who, const std::string &who_color,
+    void generic(  const std::string &msg, const std::string &who, const std::string &who_color,
                           const bool in_place = false, const Hash &params = {}, 
                           const std::string &msg_color = white,
-                          const std::string &delim = detail::delim, const bool newline = true) {
-      std::cerr << who_color << who << delim << msg_color << msg;
-      if(newline) {
-        if(in_place)
-          std::cerr << detail::cr;
-        else {
-          std::cerr << detail::lf;
-          for (const auto &pair: params) {
-            std::cerr << "\t" << green << pair.first << delim << white << pair.second << detail::lf;
-        }
-        }
-      }
-    }
+                          const std::string &delim = detail::delim, const bool newline = true);
   }
+
   /*
   * Описания функций вывода
   * msg - сообщение, которое нужно вывести
@@ -97,29 +83,10 @@ namespace Printer {
   * expr - условие, проверяемое в assert
   */
 
-  static void debug(const std::string msg = detail::empty_msg, const std::string who = detail::debug_msg, const Hash &params = {}, const bool in_place = false) {
-    #if DEBUG
-    detail::generic(msg, who, green, in_place, params);
-    #endif
-  }
-  static void assert(const bool expr, std::string msg = detail::empty_msg, const std::string who = detail::assert_msg, const Hash &params = {}) {
-    if(!expr) {
-      detail::generic(msg, who, red, false, params);
-      throw AssertException(msg);
-    }
-  }
-  static void note(const std::string msg = detail::empty_msg, const std::string who = detail::note_msg, const Hash &params = {}, const bool in_place = false) {
-    detail::generic(msg, who, yellow, in_place, params);
-  }
-  static void error(const std::string msg = detail::empty_msg, const std::string who = detail::error_msg, const Hash &params = {}) {
-    detail::generic(msg, who, red, false, params);
-  }
-  static void fatal(const std::string msg = detail::empty_msg, const std::string who = detail::fatal_msg, const Hash &params = {})
-  {
-    detail::generic(msg, who, red, false, params);
-    throw FatalException(msg);
-  }
-  static void prompt(const std::string prompt_msg = detail::empty_msg) {
-    detail::generic(detail::empty_msg, prompt_msg, white, false, {}, white, "> ", false);
-  }
+  void debug(const std::string msg = detail::empty_msg, const std::string who = detail::debug_msg, const Hash &params = {}, const bool in_place = false);
+  void assert(const bool expr, std::string msg = detail::empty_msg, const std::string who = detail::assert_msg, const Hash &params = {});
+  void note(const std::string msg = detail::empty_msg, const std::string who = detail::note_msg, const Hash &params = {}, const bool in_place = false);
+  void error(const std::string msg = detail::empty_msg, const std::string who = detail::error_msg, const Hash &params = {});
+  void fatal(const std::string msg = detail::empty_msg, const std::string who = detail::fatal_msg, const Hash &params = {});
+  void prompt(const std::string prompt_msg = detail::empty_msg);
 };

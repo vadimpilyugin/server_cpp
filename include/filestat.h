@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "excp.h"
+#include "printer.hpp"
 #include "datetime.h"
 
 using namespace std;
@@ -23,6 +24,9 @@ class FileStat
 
 	static string mimeType (string &path);
 public:
+	static const string HTML_TYPE;
+	static const string JSON_TYPE;
+
 	FileStat (string path);
 	string getPath () const { return _path; }
 	string getName () const { return _name; }
@@ -42,6 +46,39 @@ public:
 		// сегодня
 		else {
 			return DateTime::toString (_modifDate, "%R");
+		}
+	}
+	static string pp_size(long int size);
+
+	// static functions
+	static size_t getSize(string path) {
+		return FileStat (path).getSize ();
+	}
+	static time_t getModifDate(string path) {
+		return FileStat (path).getModifDate ();
+	}
+	static bool isDirectory(string path) {
+		return FileStat (path).isDirectory ();
+	}
+	static string getMimeType(string path) {
+		return FileStat (path).getMimeType ();
+	}
+	static bool isExists (string path) {
+		try {
+			FileStat fst (path);
+			return true;
+		}
+		catch (FileException &exc) {
+			return false;
+		}
+	}
+	static bool isReadable (string path) {
+		try {
+			return FileStat (path).isReadable ();
+		}
+		catch (FileException &exc) {
+			Printer::note ("isReadable выкинула исключение! Это подозрительно...");
+			return false;
 		}
 	}
 };

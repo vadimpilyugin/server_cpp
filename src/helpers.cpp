@@ -11,6 +11,11 @@
 using namespace std;
 
 const string HeaderField::DELIM = "\r\n";
+const string HeaderField::CUSTOM_HEADER = "X-Custom";
+
+const string Methods::GET_METHOD = "GET";
+const string Methods::HEAD_METHOD = "HEAD";
+
 
 string Response::response_code (int errcode) {
 	string code;
@@ -29,6 +34,11 @@ string Response::response_code (int errcode) {
 		case 400:
 		{
 			code = "400 Bad Request";
+			break;
+		}
+		case 401:
+		{
+			code = "401 Unauthorized";
 			break;
 		}
 		case 403:
@@ -74,6 +84,11 @@ string Response::response_body (int errcode) {
 			info = "This is a Bad Request\n";
 			break;
 		}
+		case 401:
+		{
+			info = "You need to pass authentication process\n";
+			break;
+		}
 		case 403:
 		{
 			info = "You have no permission to access this directory or file\n";
@@ -110,7 +125,7 @@ string Response::response_body (int errcode) {
 }
 
 string Response::response_200 (string method, time_t modif_date, string content_type, 
-		int content_length, bool isDirectory) {
+		int content_length, bool isDirectory, bool isApi) {
 	/*
 	Date, Server,
 	Content-type-для GET, 
@@ -123,12 +138,14 @@ string Response::response_200 (string method, time_t modif_date, string content_
 	resp << Config::section("internal")["server_protocol"] << " " << response_code (200) << HeaderField::DELIM;
 	resp << HeaderField::date_field ();
 	resp << HeaderField::server_field ();
-	if (method == "GET") {
+	if (method == Methods::GET_METHOD) {
 		if (!isDirectory)
 			resp << HeaderField::range_field ();
 		resp << HeaderField::content_type_field (content_type);
 		resp << HeaderField::content_length_field (content_length);
 	}
+	// if (isApi)
+	resp << HeaderField::expires_now_field ();
 	resp << HeaderField::last_modified_field (modif_date);
 	resp << HeaderField::DELIM;
 	return resp.str();
@@ -173,6 +190,9 @@ string Response::response_4xx_5xx (int errcode, string method, size_t file_size)
 	}
 	if (errcode == 416) {
 		resp << HeaderField::content_range_field (file_size);
+	}
+	if (errcode == 401) {
+		resp << HeaderField::authenticate_field ();
 	}
 	if (method == "GET") {
 		resp << HeaderField::content_type_field (content_type);
@@ -248,11 +268,13 @@ string HtmlHelpers::header (string name) {
   	head += string ("<style media='screen' type='text/css'>")+bootstrap_min_css+"</style>\n";
   	head += string ("<style media='screen' type='text/css'>")+bootstrap_sortable_css+"</style>\n";
   	head += string ("<link rel='shortcut icon' type='image/png' href='data:image/png;base64,")+favicon_base64+"'/>\n";
-  	head += string ("<script type='text/javascript'>")+jquery_min_js+"</script>\n";
-  	head += string ("<script type='text/javascript' >")+bootstrap_min_js+"</script>\n";
-  	head += string ("<script type='text/javascript' >")+myscript_js+"</script>\n";
-  	head += string ("<script type='text/javascript' >")+bootstrap_sortable_js+"</script>\n";
-  	head += string ("<script type='text/javascript' >")+moment_min_js+"</script>\n";
+  	head += string ("<script>")	+jquery_min_js					+"</script>\n";
+  	head += string ("<script src='https://unpkg.com/vue'></script>");
+  	head += string ("<script src='https://cdn.jsdelivr.net/npm/vue-resource@1.3.4'></script>");
+  	head += string ("<script>")	+bootstrap_min_js				+"</script>\n";
+  	head += string ("<script>")	+myscript_js						+"</script>\n";
+  	head += string ("<script>")	+bootstrap_sortable_js	+"</script>\n";
+  	head += string ("<script>")	+moment_min_js					+"</script>\n";
   	head += "</head>\n";
   	return head;
 }
@@ -291,26 +313,6 @@ string HtmlHelpers::img64 (const string image_64, string text) {
 string HtmlHelpers::div_image (const string image_64, string class_name) {
 	return class_name+string(" {width:30px;height:30px;background:url(data:image/png;")+
 		string("base64,")+image_64+");}";
-}
-
-#define B_IN_GB 1073741824
-#define B_IN_MB 1048576
-#define B_IN_KB 1024
-
-string pp_size(long int size) {
-	stringstream pretty_size;
-	if (size / B_IN_GB)
-		pretty_size << std::fixed << std::setprecision(2) << ((size+0.0)/B_IN_GB) << " ГБ";
-	else if (size / B_IN_MB)
-		if (size / B_IN_MB >= 10)
-			pretty_size << size / B_IN_MB << " МБ";
-		else
-			pretty_size << std::fixed << std::setprecision(2) << ((size+0.0)/B_IN_MB) << " МБ";
-	else if (size / B_IN_KB)
-		pretty_size << size / B_IN_KB << " КБ";
-	else
-		pretty_size << size << " Б";
-	return pretty_size.str();
 }
 
 string HtmlHelpers::dir_to_table (const string &dir_path) {
@@ -371,7 +373,7 @@ string HtmlHelpers::dir_to_table (const string &dir_path) {
 				{"item-name", files[i].getName ()},
 				{"item-hr-modif-date", files[i].hrModifDate ()},
 				{"item-modif-date", std::to_string (files[i].getModifDate ())},
-				{"item-hr-size", pp_size (files[i].getSize ())},
+				{"item-hr-size", FileStat::pp_size (files[i].getSize ())},
 				{"item-size", std::to_string (files[i].getSize ())}
 			});
 		}
@@ -388,7 +390,7 @@ string HtmlHelpers::htmlDirList (const string &dir_path) {
 
 	// HTML Body
 	html_page += "<body>\n";
-	html_page += "<div class='container'>\n";
+	html_page += "<div class='container' id='app'>\n";
 	html_page += "<div class='row'>\n";
 	html_page += "<div class='col-md-1'></div>\n";
 	html_page += "<div class='col-md-10'>\n";
